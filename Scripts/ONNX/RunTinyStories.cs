@@ -45,7 +45,7 @@ public class RunTinyStories : MonoBehaviour
 
     void InitializeModel()
     {
-        engine?.Dispose(); // Удаляем предыдущий движок, если он существует
+        engine?.Dispose(); 
         var model1 = ModelLoader.Load(Path.Join(Application.streamingAssetsPath, "tinystories.sentis"));
         var model2 = FF.Compile(
             (input, currentToken) =>
@@ -61,8 +61,8 @@ public class RunTinyStories : MonoBehaviour
 
     void OnGenerateButtonClicked()
     {
-        ResetGenerationState();  // Полностью сбрасываем состояние перед запуском новой генерации
-        InitializeModel();       // Создаём новый экземпляр модели
+        ResetGenerationState();  
+        InitializeModel();       
         outputString = inputField.text;
         DecodePrompt(outputString);
         runInference = true;
@@ -231,7 +231,7 @@ public class RunTinyStories : MonoBehaviour
     {
         if (engine != null)
         {
-            engine.Dispose(); // Удаляем старый движок
+            engine.Dispose(); // Г“Г¤Г Г«ГїГҐГ¬ Г±ГІГ Г°Г»Г© Г¤ГўГЁГ¦Г®ГЄ
         }
 
         currentToken = 0;
