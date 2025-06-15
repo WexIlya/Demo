@@ -30,7 +30,7 @@ public class APIChat : MonoBehaviour
     public bool showFullJson = true;
     public float requestTimeout = 30f;
     [Header("Role Settings")]
-    public string defaultRoleContext = "Отыгрывай роль старосты деревни в фэнтези мире";
+    public string defaultRoleContext = "";
 
     void Start()
     {
@@ -39,13 +39,11 @@ public class APIChat : MonoBehaviour
         sendButton.onClick.AddListener(SendMessageToAI);
         userInputField.onSubmit.AddListener(delegate { SendMessageToAI(); });
 
-        Debug.Log("GigaChatAI инициализирован");
         StartCoroutine(GetToken());
     }
 
     IEnumerator GetToken()
     {
-        Debug.Log("Корутина запущена");
         string requestBody = $"scope={scope}";
         byte[] bodyRaw = Encoding.UTF8.GetBytes(requestBody);
 
@@ -63,7 +61,6 @@ public class APIChat : MonoBehaviour
 
         if (request.result == UnityWebRequest.Result.Success)
         {
-            Debug.Log("Токен получен!");
             Debug.Log(request.downloadHandler.text);
 
             var jsonResponse = JsonUtility.FromJson<TokenResponse>(request.downloadHandler.text);
@@ -72,8 +69,8 @@ public class APIChat : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"Ошибка: {request.error}");
-            Debug.LogError($"Ответ: {request.downloadHandler.text}");
+            Debug.LogError($" {request.error}");
+            Debug.LogError($" {request.downloadHandler.text}");
         }
         yield return new WaitForSeconds(1800f);
     }
@@ -82,20 +79,20 @@ public class APIChat : MonoBehaviour
     {
         if (string.IsNullOrEmpty(userInputField.text))
         {
-            UpdateStatus("Введите сообщение!");
-            Debug.LogWarning("Попытка отправить пустое сообщение");
+            UpdateStatus("Р’РІРµРґРёС‚Рµ СЃРѕРѕР±С‰РµРЅРёРµ!");
+            Debug.LogWarning("РџРѕРїС‹С‚РєР° РѕС‚РїСЂР°РІРёС‚СЊ РїСѓСЃС‚РѕРµ СЃРѕРѕР±С‰РµРЅРёРµ");
             return;
         }
 
-        Debug.Log($"Начало отправки запроса: {userInputField.text}");
+        Debug.Log($"РќР°С‡Р°Р»Рѕ РѕС‚РїСЂР°РІРєРё Р·Р°РїСЂРѕСЃР°: {userInputField.text}");
         StartCoroutine(SendChatRequest(userInputField.text));
     }
 
     IEnumerator SendChatRequest(string userMessage)
     {
         SetUIInteractable(false);
-        UpdateStatus("Подготовка запроса...");
-        aiResponseText.text = "Думаю...";
+        UpdateStatus("РџРѕРґРіРѕС‚РѕРІРєР° Р·Р°РїСЂРѕСЃР°...");
+        aiResponseText.text = "Р”СѓРјР°СЋ...";
 
         var requestBody = new RequestBody
         {
@@ -119,7 +116,7 @@ public class APIChat : MonoBehaviour
 
         if (showFullJson)
         {
-            Debug.Log($"Отправляемый JSON:\n{jsonBody}");
+            Debug.Log($"{jsonBody}");
         }
 
         using (UnityWebRequest request = new UnityWebRequest(apiEndpoint, "POST"))
@@ -135,7 +132,7 @@ public class APIChat : MonoBehaviour
             bool timeoutReached = false;
 
             var operation = request.SendWebRequest();
-            UpdateStatus("Отправка запроса...");
+            UpdateStatus("РћС‚РїСЂР°РІРєР° Р·Р°РїСЂРѕСЃР°...");
 
             while (!operation.isDone)
             {
@@ -146,43 +143,43 @@ public class APIChat : MonoBehaviour
                     break;
                 }
 
-                UpdateStatus($"Отправка... {Mathf.RoundToInt(operation.progress * 100)}%");
+                UpdateStatus($"РћС‚РїСЂР°РІРєР°... {Mathf.RoundToInt(operation.progress * 100)}%");
                 yield return null;
             }
 
             if (timeoutReached)
             {
-                Debug.LogError($"Таймаут запроса ({requestTimeout} сек)");
-                UpdateStatus("Таймаут соединения");
-                aiResponseText.text = "Сервер не ответил";
+                Debug.LogError($"РўР°Р№РјР°СѓС‚ Р·Р°РїСЂРѕСЃР° ({requestTimeout} Г±ГҐГЄ)");
+                UpdateStatus("РўР°Р№РјР°СѓС‚ СЃРѕРµРґРёРЅРµРЅРёСЏ");
+                aiResponseText.text = "РЎРµСЂРІРµСЂ РЅРµ РѕС‚РІРµС‚РёР»";
                 yield break;
             }
 
-            Debug.Log($"Запрос завершен за {Time.time - startTime:F2} сек");
-            Debug.Log($"HTTP статус: {request.responseCode}");
-            Debug.Log($"Заголовки ответа: {request.GetResponseHeaders()?.ToString() ?? "нет"}");
+            Debug.Log($"Р—Р°РїСЂРѕСЃ Р·Р°РІРµСЂС€РµРЅ Р·Р° {Time.time - startTime:F2} СЃРµРє");
+            Debug.Log($"HTTP СЃС‚Р°С‚СѓСЃ: {request.responseCode}");
+            Debug.Log($"Р—Р°РіРѕР»РѕРІРєРё РѕС‚РІРµС‚Р°: {request.GetResponseHeaders()?.ToString() ?? "Г­ГҐГІ"}");
 
             if (!string.IsNullOrEmpty(request.error))
             {
-                Debug.LogError($"Ошибка запроса: {request.error}");
-                Debug.LogError($"Полный ответ: {request.downloadHandler?.text ?? "нет данных"}");
+                Debug.LogError($"РћС€РёР±РєР° Р·Р°РїСЂРѕСЃР°: {request.error}");
+                Debug.LogError($"РџРѕР»РЅС‹Р№ РѕС‚РІРµС‚: {request.downloadHandler?.text ?? "Г­ГҐГІ Г¤Г Г­Г­Г»Гµ"}");
             }
             else if (showFullJson)
             {
-                Debug.Log($"Полный ответ: {request.downloadHandler?.text}");
+                Debug.Log($"РџРѕР»РЅС‹Р№ РѕС‚РІРµС‚: {request.downloadHandler?.text}");
             }
 
             if (request.result == UnityWebRequest.Result.Success)
             {
                 ProcessAIResponse(request.downloadHandler.text);
-                UpdateStatus("Ответ получен");
+                UpdateStatus("РћС‚РІРµС‚ РїРѕР»СѓС‡РµРЅ");
             }
             else
             {
                 string errorMessage = ParseError(request);
-                Debug.LogError($"Ошибка: {errorMessage}");
+                Debug.LogError($"РћС€РёР±РєР°: {errorMessage}");
                 aiResponseText.text = errorMessage;
-                UpdateStatus("Ошибка запроса");
+                UpdateStatus("РћС€РёР±РєР° Р·Р°РїСЂРѕСЃР°");
             }
         }
 
@@ -191,10 +188,10 @@ public class APIChat : MonoBehaviour
 
     private string ParseError(UnityWebRequest request)
     {
-        if (request.responseCode == 401) return "Ошибка 401: Неверный API-ключ";
-        if (request.responseCode == 403) return "Ошибка 403: Доступ запрещен";
-        if (request.responseCode == 429) return "Ошибка 429: Слишком много запросов";
-        if (request.responseCode >= 500) return $"Ошибка {request.responseCode}: Проблемы на сервере";
+        if (request.responseCode == 401) return "РћС€РёР±РєР° 401: РќРµРІРµСЂРЅС‹Р№ API-РєР»СЋС‡";
+        if (request.responseCode == 403) return "РћС€РёР±РєР° 403: Р”РѕСЃС‚СѓРї Р·Р°РїСЂРµС‰РµРЅ";
+        if (request.responseCode == 429) return "РћС€РёР±РєР° 429: РЎР»РёС€РєРѕРј РјРЅРѕРіРѕ Р·Р°РїСЂРѕСЃРѕРІ";
+        if (request.responseCode >= 500) return $"РћС€РёР±РєР° {request.responseCode}: РџСЂРѕР±Р»РµРјС‹ РЅР° СЃРµСЂРІРµСЂРµ";
 
         try
         {
@@ -203,7 +200,7 @@ public class APIChat : MonoBehaviour
         }
         catch
         {
-            return request.error ?? "Неизвестная ошибка";
+            return request.error ?? "РќРµРёР·РІРµСЃС‚РЅР°СЏ РѕС€РёР±РєР°";
         }
     }
 
@@ -217,18 +214,18 @@ public class APIChat : MonoBehaviour
             {
                 string aiMessage = response.choices[0].message.content;
                 aiResponseText.text = aiMessage;
-                Debug.Log("Успешно получен ответ от ИИ");
+                Debug.Log("РЈСЃРїРµС€РЅРѕ РїРѕР»СѓС‡РµРЅ РѕС‚РІРµС‚ РѕС‚ РР");
             }
             else
             {
-                aiResponseText.text = "Пустой ответ от ИИ";
-                Debug.LogWarning("Получен пустой ответ от API");
+                aiResponseText.text = "РџСѓСЃС‚РѕР№ РѕС‚РІРµС‚ РѕС‚ РР";
+                Debug.LogWarning("РџРѕР»СѓС‡РµРЅ РїСѓСЃС‚РѕР№ РѕС‚РІРµС‚ РѕС‚ API");
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"Ошибка парсинга JSON: {e.Message}\nОтвет сервера: {jsonResponse}");
-            aiResponseText.text = "Ошибка обработки ответа";
+            Debug.LogError($"РћС€РёР±РєР° РїР°СЂСЃРёРЅРіР° JSON: {e.Message}\nРћС‚РІРµС‚ СЃРµСЂРІРµСЂР°: {jsonResponse}");
+            aiResponseText.text = "С€РёР±РєР° РѕР±СЂР°Р±РѕС‚РєРё РѕС‚РІРµС‚Р°";
         }
     }
 
@@ -250,7 +247,7 @@ public class APIChat : MonoBehaviour
         X509Chain chain,
         SslPolicyErrors sslPolicyErrors)
     {
-        Debug.Log($"SSL проверка: {certificate?.Subject ?? "нет сертификата"}, ошибки: {sslPolicyErrors}");
+        Debug.Log($"SSL: {certificate?.Subject ?? "РЅРµС‚ СЃРµСЂС‚РёС„РёРєР°С‚Р°"}, РѕС€РёР±РєР°: {sslPolicyErrors}");
         return true;
     }
     private string GetBase64Auth(string id, string secret)
@@ -264,7 +261,7 @@ public class APIChat : MonoBehaviour
     {
         protected override bool ValidateCertificate(byte[] certificateData)
         {
-            Debug.Log("Bypass сертификата");
+            Debug.Log("Bypass СЃРµСЂС‚РёС„РёРєР°С‚Р°");
             return true;
         }
     }
